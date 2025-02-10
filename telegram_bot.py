@@ -9,7 +9,8 @@ import tempfile
 import time
 import chess
 import chess.engine
-from flask import Flask
+from flask import Flask, request, Response
+import asyncio
 
 # Flask uygulamasını oluştur
 app = Flask(__name__)
@@ -27,7 +28,7 @@ TOKEN = "7563812107:AAHX2ADgHEkHLjnBFpCXoqvq2LcqO7TB_YQ"
 STOCKFISH_PATH = "./stockfish"
 
 # Global bot uygulaması
-bot_app = None
+bot_app = Application.builder().token(TOKEN).build()
 
 def analyze_position(fen):
     """Stockfish ile pozisyonu analiz et"""
@@ -158,32 +159,33 @@ async def handle_photo(update: Update, context: ContextTypes.DEFAULT_TYPE):
             except:
                 pass
 
+# Komutları ekle
+bot_app.add_handler(CommandHandler("start", start))
+bot_app.add_handler(CommandHandler("help", help_command))
+bot_app.add_handler(MessageHandler(filters.PHOTO, handle_photo))
+
 @app.route('/')
 def health_check():
     return 'Bot çalışıyor!', 200
 
-def init_bot():
-    """Bot'u başlat"""
-    global bot_app
-    if bot_app is None:
-        # Model'i başlangıçta yükle
-        load_model_if_needed()
-        
-        # Bot uygulamasını oluştur
-        bot_app = Application.builder().token(TOKEN).build()
+@app.route(f'/{TOKEN}', methods=['POST'])
+async def webhook():
+    """Telegram'dan gelen webhook isteklerini işle"""
+    if request.method == "POST":
+        update = Update.de_json(request.get_json(force=True), bot_app.bot)
+        await bot_app.process_update(update)
+        return Response('ok', status=200)
+    return Response('', status=404)
 
-        # Komutları ekle
-        bot_app.add_handler(CommandHandler("start", start))
-        bot_app.add_handler(CommandHandler("help", help_command))
-        
-        # Fotoğraf handler'ını ekle
-        bot_app.add_handler(MessageHandler(filters.PHOTO, handle_photo))
-
-        # Bot'u başlat
-        bot_app.run_polling(close_loop=False)
-
-# Gunicorn başlatıldığında bot'u başlat
-init_bot()
+# Model'i başlangıçta yükle
+load_model_if_needed()
 
 if __name__ == '__main__':
+    # Webhook URL'sini ayarla
+    WEBHOOK_URL = os.environ.get('WEBHOOK_URL', f'https://chess-recognition-bot.onrender.com/{TOKEN}')
+    
+    # Webhook'u ayarla
+    asyncio.run(bot_app.bot.set_webhook(url=WEBHOOK_URL))
+    
+    # Flask uygulamasını başlat
     app.run(host='0.0.0.0', port=8000) 

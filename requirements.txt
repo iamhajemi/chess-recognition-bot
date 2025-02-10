@@ -5,3 +5,4 @@ numpy
 chess
 gunicorn==21.2.0
 flask==3.0.2
+aiohttp==3.9.3
