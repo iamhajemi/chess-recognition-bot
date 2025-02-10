@@ -29,4 +29,4 @@ ENV SWAP_LIMIT=1024m
 EXPOSE 8000
 
 # Çalıştır
-CMD ["gunicorn", "--bind", "0.0.0.0:8000", "--workers", "2", "--timeout", "120", "--worker-class", "gthread", "--threads", "4", "telegram_bot:app"] 
+CMD ["hypercorn", "--bind", "0.0.0.0:8000", "--workers", "2", "--worker-class", "asyncio", "telegram_bot:app"] 
