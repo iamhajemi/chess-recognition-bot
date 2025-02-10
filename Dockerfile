@@ -17,15 +17,16 @@ RUN chmod +x stockfish
 
 # Worker ayarları
 ENV PYTHONUNBUFFERED=1
-ENV WORKER_CLASS=gthread
-ENV WORKER_CONNECTIONS=1000
+ENV WORKERS=2
 ENV TIMEOUT=120
 ENV KEEP_ALIVE=2
-ENV WORKER_TIMEOUT=120
 
 # Bellek sınırlamaları
 ENV MEMORY_LIMIT=512m
 ENV SWAP_LIMIT=1024m
 
+# Port ayarı
+EXPOSE 8000
+
 # Çalıştır
-CMD ["python", "telegram_bot.py"] 
+CMD ["gunicorn", "--bind", "0.0.0.0:8000", "--workers", "2", "--timeout", "120", "--worker-class", "gthread", "--threads", "4", "telegram_bot:app"] 

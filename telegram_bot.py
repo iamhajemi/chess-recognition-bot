@@ -9,6 +9,10 @@ import tempfile
 import time
 import chess
 import chess.engine
+from flask import Flask
+
+# Flask uygulamasını oluştur
+app = Flask(__name__)
 
 # Loglama ayarları
 logging.basicConfig(
@@ -21,6 +25,9 @@ TOKEN = "7563812107:AAHX2ADgHEkHLjnBFpCXoqvq2LcqO7TB_YQ"
 
 # Stockfish yolu
 STOCKFISH_PATH = "./stockfish"
+
+# Global bot uygulaması
+bot_app = None
 
 def analyze_position(fen):
     """Stockfish ile pozisyonu analiz et"""
@@ -152,23 +159,32 @@ async def handle_photo(update: Update, context: ContextTypes.DEFAULT_TYPE):
             except:
                 pass
 
-def main():
+@app.route('/')
+def health_check():
+    return 'Bot çalışıyor!', 200
+
+def init_bot():
     """Bot'u başlat"""
-    # Model'i başlangıçta yükle
-    load_model_if_needed()
-    
-    # Bot uygulamasını oluştur
-    application = Application.builder().token(TOKEN).build()
+    global bot_app
+    if bot_app is None:
+        # Model'i başlangıçta yükle
+        load_model_if_needed()
+        
+        # Bot uygulamasını oluştur
+        bot_app = Application.builder().token(TOKEN).build()
 
-    # Komutları ekle
-    application.add_handler(CommandHandler("start", start))
-    application.add_handler(CommandHandler("help", help_command))
-    
-    # Fotoğraf handler'ını ekle
-    application.add_handler(MessageHandler(filters.PHOTO, handle_photo))
+        # Komutları ekle
+        bot_app.add_handler(CommandHandler("start", start))
+        bot_app.add_handler(CommandHandler("help", help_command))
+        
+        # Fotoğraf handler'ını ekle
+        bot_app.add_handler(MessageHandler(filters.PHOTO, handle_photo))
 
-    # Bot'u başlat
-    application.run_polling()
+        # Bot'u başlat
+        bot_app.run_polling(close_loop=False)
+
+# Gunicorn başlatıldığında bot'u başlat
+init_bot()
 
 if __name__ == '__main__':
-    main() 
+    app.run(host='0.0.0.0', port=8000) 
