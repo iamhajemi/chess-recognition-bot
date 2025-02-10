@@ -10,6 +10,10 @@ import time
 import chess
 import chess.engine
 import asyncio
+import nest_asyncio
+
+# Event loop düzeltmesi
+nest_asyncio.apply()
 
 # Loglama ayarları
 logging.basicConfig(
@@ -152,7 +156,7 @@ async def handle_photo(update: Update, context: ContextTypes.DEFAULT_TYPE):
             except:
                 pass
 
-async def main():
+def run_bot():
     """Bot'u başlat"""
     # Model'i başlangıçta yükle
     load_model_if_needed()
@@ -165,12 +169,9 @@ async def main():
     application.add_handler(CommandHandler("help", help_command))
     application.add_handler(MessageHandler(filters.PHOTO, handle_photo))
 
-    # Webhook'u kaldır
-    await application.bot.delete_webhook()
-
     # Bot'u başlat
-    await application.run_polling(allowed_updates=Update.ALL_TYPES)
+    application.run_polling(allowed_updates=Update.ALL_TYPES)
 
 if __name__ == '__main__':
     # Bot'u başlat
-    asyncio.run(main()) 
+    run_bot() 
