@@ -17,16 +17,10 @@ RUN chmod +x stockfish
 
 # Worker ayarları
 ENV PYTHONUNBUFFERED=1
-ENV WORKERS=2
-ENV TIMEOUT=120
-ENV KEEP_ALIVE=2
 
 # Bellek sınırlamaları
 ENV MEMORY_LIMIT=512m
 ENV SWAP_LIMIT=1024m
 
-# Port ayarı
-EXPOSE 8000
-
 # Çalıştır
-CMD ["hypercorn", "--bind", "0.0.0.0:8000", "--workers", "2", "--worker-class", "asyncio", "telegram_bot:app"] 
+CMD ["python", "telegram_bot.py"] 

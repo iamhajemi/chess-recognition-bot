@@ -9,12 +9,7 @@ import tempfile
 import time
 import chess
 import chess.engine
-from flask import Flask, request, Response
 import asyncio
-from quart import Quart, request, Response
-
-# Quart uygulamasını oluştur (Flask'ın async versiyonu)
-app = Quart(__name__)
 
 # Loglama ayarları
 logging.basicConfig(
@@ -27,19 +22,6 @@ TOKEN = "7563812107:AAHX2ADgHEkHLjnBFpCXoqvq2LcqO7TB_YQ"
 
 # Stockfish yolu
 STOCKFISH_PATH = "./stockfish"
-
-# Global bot uygulaması
-bot_app = None
-
-def create_bot_app():
-    global bot_app
-    if bot_app is None:
-        bot_app = Application.builder().token(TOKEN).build()
-        # Komutları ekle
-        bot_app.add_handler(CommandHandler("start", start))
-        bot_app.add_handler(CommandHandler("help", help_command))
-        bot_app.add_handler(MessageHandler(filters.PHOTO, handle_photo))
-    return bot_app
 
 def analyze_position(fen):
     """Stockfish ile pozisyonu analiz et"""
@@ -170,32 +152,25 @@ async def handle_photo(update: Update, context: ContextTypes.DEFAULT_TYPE):
             except:
                 pass
 
-@app.route('/')
-async def health_check():
-    return 'Bot çalışıyor!', 200
+async def main():
+    """Bot'u başlat"""
+    # Model'i başlangıçta yükle
+    load_model_if_needed()
+    
+    # Bot uygulamasını oluştur
+    application = Application.builder().token(TOKEN).build()
 
-@app.route(f'/{TOKEN}', methods=['POST'])
-async def webhook():
-    """Telegram'dan gelen webhook isteklerini işle"""
-    if request.method == "POST":
-        json_data = await request.get_json()
-        update = Update.de_json(json_data, create_bot_app().bot)
-        await create_bot_app().process_update(update)
-        return Response('ok', status=200)
-    return Response('', status=404)
+    # Komutları ekle
+    application.add_handler(CommandHandler("start", start))
+    application.add_handler(CommandHandler("help", help_command))
+    application.add_handler(MessageHandler(filters.PHOTO, handle_photo))
 
-# Model'i başlangıçta yükle
-load_model_if_needed()
+    # Webhook'u kaldır
+    await application.bot.delete_webhook()
 
-async def setup_webhook():
-    """Webhook'u ayarla"""
-    WEBHOOK_URL = os.environ.get('WEBHOOK_URL', f'https://chess-recognition-bot.onrender.com/{TOKEN}')
-    await create_bot_app().bot.set_webhook(url=WEBHOOK_URL)
-    print(f"Webhook set to {WEBHOOK_URL}")
+    # Bot'u başlat
+    await application.run_polling(allowed_updates=Update.ALL_TYPES)
 
 if __name__ == '__main__':
-    # Webhook'u ayarla
-    asyncio.run(setup_webhook())
-    
-    # Quart uygulamasını başlat
-    app.run(host='0.0.0.0', port=8000) 
+    # Bot'u başlat
+    asyncio.run(main()) 
