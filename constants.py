@@ -15,4 +15,4 @@ TILES_DIR = './images/tiles'
 USE_GRAYSCALE = True
 
 # Where neural network model/weights are stored
-NN_MODEL_PATH = './nn/model.tf'
+NN_MODEL_PATH = './nn'
