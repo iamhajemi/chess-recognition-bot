@@ -28,27 +28,30 @@ def analyze_position(fen):
         # Stockfish motorunu başlat
         engine = chess.engine.SimpleEngine.popen_uci(STOCKFISH_PATH)
         
-        # Motor ayarlarını yap
+        # Motor ayarlarını yap - Bellek kullanımını azalt
         engine.configure({
-            "Threads": 4,           # CPU thread sayısı
-            "Hash": 128,           # Hash tablosu boyutu (MB)
+            "Threads": 1,           # CPU thread sayısını azalt
+            "Hash": 32,            # Hash tablosu boyutunu azalt (MB)
             "Skill Level": 20,     # En yüksek seviye
             "Move Overhead": 1000,  # Hamle başına düşünme süresi (ms)
-            "UCI_ShowWDL": True    # Kazanma/Beraberlik/Kaybetme oranlarını göster
+            "UCI_ShowWDL": True,    # Kazanma/Beraberlik/Kaybetme oranlarını göster
+            "Contempt": 0,         # Beraberliğe karşı tutum
+            "Ponder": False,       # Arka planda düşünmeyi kapat
+            "MultiPV": 1           # Sadece en iyi hamleyi göster
         })
         
         # Tahtayı FEN'den oluştur
         board = chess.Board(fen)
         
-        # Analiz yap (derinlik 25 ve 10 saniye düşünme süresi)
-        info = engine.analyse(board, chess.engine.Limit(depth=25, time=10.0))
+        # Analiz yap (derinlik ve süreyi azalt)
+        info = engine.analyse(board, chess.engine.Limit(depth=15, time=5.0))
         
         # En iyi hamleyi ve puanı al
         best_move = info["pv"][0]
         score = info["score"].relative.score(mate_score=100000)
         
-        # Varyasyonu al (ilk 3 hamle)
-        variation = board.variation_san(info["pv"][:3])
+        # Varyasyonu al (sadece ilk 2 hamle)
+        variation = board.variation_san(info["pv"][:2])
         
         # WDL (Kazanma/Beraberlik/Kaybetme) oranlarını al
         wdl = info.get("wdl", None)
@@ -66,10 +69,10 @@ def analyze_position(fen):
             return (
                 f"En iyi hamle: {move_san} (Değerlendirme: {score_str})\n"
                 f"Önerilen varyasyon: {variation}\n"
-                f"Analiz derinliği: 25{wdl_str}"
+                f"Analiz derinliği: 15{wdl_str}"
             )
         else:
-            return f"En iyi hamle: {move_san}\nÖnerilen varyasyon: {variation}\nAnaliz derinliği: 25"
+            return f"En iyi hamle: {move_san}\nÖnerilen varyasyon: {variation}\nAnaliz derinliği: 15"
             
     except Exception as e:
         return f"Analiz sırasında bir hata oluştu: {str(e)}"

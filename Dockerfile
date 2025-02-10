@@ -15,5 +15,17 @@ COPY stockfish ./
 COPY nn/ ./nn/
 RUN chmod +x stockfish
 
+# Worker ayarları
+ENV PYTHONUNBUFFERED=1
+ENV WORKER_CLASS=gthread
+ENV WORKER_CONNECTIONS=1000
+ENV TIMEOUT=120
+ENV KEEP_ALIVE=2
+ENV WORKER_TIMEOUT=120
+
+# Bellek sınırlamaları
+ENV MEMORY_LIMIT=512m
+ENV SWAP_LIMIT=1024m
+
 # Çalıştır
 CMD ["python", "telegram_bot.py"] 
