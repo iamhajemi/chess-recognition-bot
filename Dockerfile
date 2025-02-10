@@ -17,8 +17,8 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 # Uygulama kodlarını ve stockfish'i kopyala
 COPY *.py ./
-COPY stockfish.exe ./
-RUN chmod +x stockfish.exe
+COPY stockfish ./
+RUN chmod +x stockfish
 
 # Çalıştır
 CMD ["python", "telegram_bot.py"] 

@@ -20,7 +20,7 @@ logging.basicConfig(
 TOKEN = "7563812107:AAHX2ADgHEkHLjnBFpCXoqvq2LcqO7TB_YQ"
 
 # Stockfish yolu
-STOCKFISH_PATH = "./stockfish.exe"
+STOCKFISH_PATH = "./stockfish"
 
 def analyze_position(fen):
     """Stockfish ile pozisyonu analiz et"""
