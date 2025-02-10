@@ -42,9 +42,8 @@ def analyze_position(fen):
             "Skill Level": 20,     # En yüksek seviye
             "Move Overhead": 1000,  # Hamle başına düşünme süresi (ms)
             "UCI_ShowWDL": True,    # Kazanma/Beraberlik/Kaybetme oranlarını göster
-            "Contempt": 0,         # Beraberliğe karşı tutum
-            "Ponder": False,       # Arka planda düşünmeyi kapat
-            "MultiPV": 1           # Sadece en iyi hamleyi göster
+            "MultiPV": 1,          # Sadece en iyi hamleyi göster
+            "Ponder": False        # Arka planda düşünmeyi kapat
         })
         
         # Tahtayı FEN'den oluştur
