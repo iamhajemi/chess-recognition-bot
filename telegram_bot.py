@@ -54,8 +54,7 @@ def analyze_position(fen):
             "Hash": 32,            # Hash tablosu boyutunu azalt (MB)
             "Skill Level": 20,     # En yüksek seviye
             "Move Overhead": 1000,  # Hamle başına düşünme süresi (ms)
-            "UCI_ShowWDL": True,    # Kazanma/Beraberlik/Kaybetme oranlarını göster
-            "Ponder": False        # Arka planda düşünmeyi kapat
+            "UCI_ShowWDL": True     # Kazanma/Beraberlik/Kaybetme oranlarını göster
         })
         
         # Tahtayı FEN'den oluştur
