@@ -22,5 +22,8 @@ ENV PYTHONUNBUFFERED=1
 ENV MEMORY_LIMIT=512m
 ENV SWAP_LIMIT=1024m
 
+# Port'u aç
+EXPOSE 10000
+
 # Çalıştır
 CMD ["python", "telegram_bot.py"] 

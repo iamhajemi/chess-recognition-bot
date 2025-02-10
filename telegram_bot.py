@@ -11,6 +11,8 @@ import chess
 import chess.engine
 import asyncio
 import nest_asyncio
+import threading
+from http.server import HTTPServer, BaseHTTPRequestHandler
 
 # Event loop düzeltmesi
 nest_asyncio.apply()
@@ -26,6 +28,19 @@ TOKEN = "7563812107:AAHX2ADgHEkHLjnBFpCXoqvq2LcqO7TB_YQ"
 
 # Stockfish yolu
 STOCKFISH_PATH = "./stockfish"
+
+# Web sunucusu için basit handler
+class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
+    def do_GET(self):
+        self.send_response(200)
+        self.end_headers()
+        self.wfile.write(b'Bot calisiyor!')
+
+def start_web_server():
+    """Web sunucusunu başlat"""
+    port = int(os.environ.get("PORT", 10000))
+    server = HTTPServer(('0.0.0.0', port), SimpleHTTPRequestHandler)
+    server.serve_forever()
 
 def analyze_position(fen):
     """Stockfish ile pozisyonu analiz et"""
@@ -167,6 +182,11 @@ def run_bot():
     application.add_handler(CommandHandler("start", start))
     application.add_handler(CommandHandler("help", help_command))
     application.add_handler(MessageHandler(filters.PHOTO, handle_photo))
+
+    # Web sunucusunu ayrı bir thread'de başlat
+    web_thread = threading.Thread(target=start_web_server)
+    web_thread.daemon = True
+    web_thread.start()
 
     # Bot'u başlat
     application.run_polling(allowed_updates=Update.ALL_TYPES)
