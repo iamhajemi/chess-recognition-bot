@@ -87,7 +87,7 @@ def _save_output_html(chessboard_img_path, fen, predictions, confidence):
 
 def predict_chessboard(chessboard_img_path, options={}):
     """ Given a file path to a chessboard PNG image,
-        Returns a FEN string representation of the chessboard
+        Returns a tuple of (FEN string, confidence)
     """
     if not options.quiet:
         print("Predicting chessboard {}".format(chessboard_img_path))
@@ -101,19 +101,20 @@ def predict_chessboard(chessboard_img_path, options={}):
         if not options.quiet:
             print((fen_char, probability))
         predictions.append((fen_char, probability))
+        confidence *= probability
+    
     predicted_fen = compressed_fen(
         '/'.join(
             [''.join(r) for r in np.reshape([p[0] for p in predictions], [8, 8])]
         )
     )
     if not options.quiet:
-        confidence = reduce(lambda x,y: x*y, [p[1] for p in predictions])
         print("Confidence: {}".format(confidence))
     # if options.debug:
     print("https://lichess.org/editor/{}".format(predicted_fen))
     _save_output_html(chessboard_img_path, predicted_fen, [p[1] for p in predictions], confidence)
     print("Saved {} prediction to {}".format(chessboard_img_path, OUT_FILE))
-    return predicted_fen
+    return predicted_fen, confidence
 
 def predict_tile(tile_img_data):
     """ Given the image data of a tile, try to determine what piece

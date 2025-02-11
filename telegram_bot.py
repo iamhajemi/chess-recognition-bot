@@ -93,14 +93,39 @@ async def handle_photo(update: Update, context: ContextTypes.DEFAULT_TYPE):
         
         try:
             # Satranç tahtasını analiz et
-            fen = predict_chessboard(temp_file, type('Args', (), {'quiet': True, 'debug': False})())
+            fen, confidence = predict_chessboard(temp_file, type('Args', (), {'quiet': True, 'debug': False})())
             
-            # FEN notasyonunu gönder
-            await update.message.reply_text(f"FEN Notasyonu:\n`{fen}`", parse_mode='Markdown')
+            # Güvenilirlik yüzdesini hesapla
+            confidence_percentage = confidence * 100
+            
+            # Güvenilirlik emojisi seç
+            if confidence_percentage >= 95:
+                emoji = "🟢"  # Yüksek güvenilirlik
+            elif confidence_percentage >= 85:
+                emoji = "🟡"  # Orta güvenilirlik
+            else:
+                emoji = "🔴"  # Düşük güvenilirlik
+            
+            # FEN notasyonunu ve güvenilirliği gönder
+            await update.message.reply_text(
+                f"FEN Notasyonu:\n`{fen}`\n\n"
+                f"Tahmin güvenilirliği: {emoji} %{confidence_percentage:.1f}",
+                parse_mode='Markdown'
+            )
             
             # Lichess analiz linki
             lichess_url = f"https://lichess.org/analysis/standard/{fen}"
             await update.message.reply_text(f"Lichess'te analiz et:\n{lichess_url}")
+            
+            # Düşük güvenilirlik uyarısı
+            if confidence_percentage < 85:
+                await update.message.reply_text(
+                    "⚠️ Uyarı: Tahmin güvenilirliği düşük. Lütfen FEN notasyonunu kontrol edin. "
+                    "Daha iyi sonuç için:\n"
+                    "1. Tahtanın tamamı fotoğraf karesinde olmalı\n"
+                    "2. Fotoğraf net ve iyi aydınlatılmış olmalı\n"
+                    "3. Taşlar net görünmeli"
+                )
             
         except Exception as e:
             await update.message.reply_text(f"Satranç tahtası analiz edilirken bir hata oluştu: {str(e)}")
