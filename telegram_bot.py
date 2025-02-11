@@ -125,24 +125,34 @@ async def handle_photo(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 def run_bot():
     """Bot'u başlat"""
-    # Model'i başlangıçta yükle
-    load_model_if_needed()
-    
-    # Bot uygulamasını oluştur
-    application = Application.builder().token(TOKEN).build()
+    try:
+        # Model'i başlangıçta yükle
+        load_model_if_needed()
+        
+        # Bot uygulamasını oluştur
+        application = Application.builder().token(TOKEN).build()
 
-    # Komutları ekle
-    application.add_handler(CommandHandler("start", start))
-    application.add_handler(CommandHandler("help", help_command))
-    application.add_handler(MessageHandler(filters.PHOTO, handle_photo))
+        # Komutları ekle
+        application.add_handler(CommandHandler("start", start))
+        application.add_handler(CommandHandler("help", help_command))
+        application.add_handler(MessageHandler(filters.PHOTO, handle_photo))
 
-    # Web sunucusunu ayrı bir thread'de başlat
-    web_thread = threading.Thread(target=start_web_server)
-    web_thread.daemon = True
-    web_thread.start()
+        # Web sunucusunu ayrı bir thread'de başlat
+        web_thread = threading.Thread(target=start_web_server)
+        web_thread.daemon = False  # Ana uygulama dursa bile web sunucusu çalışmaya devam etsin
+        web_thread.start()
 
-    # Bot'u başlat
-    application.run_polling(allowed_updates=Update.ALL_TYPES)
+        print("Bot ve web sunucusu başlatılıyor...")
+        
+        # Bot'u başlat
+        application.run_polling(allowed_updates=Update.ALL_TYPES, drop_pending_updates=True)
+        
+    except Exception as e:
+        print(f"Bir hata oluştu: {str(e)}")
+        # Hata durumunda 30 saniye bekle ve yeniden başlat
+        time.sleep(30)
+        print("Bot yeniden başlatılıyor...")
+        run_bot()
 
 if __name__ == '__main__':
     # Bot'u başlat
