@@ -1,89 +1,118 @@
-# Chessboard recognizer
+# Chess Recognition Bot
 
-Uses a convolutional neural network to recognize the positions of pieces
-on a chessboard image.
+A Telegram bot that recognizes chess positions from images and provides FEN notation and Lichess analysis links.
 
-If you have an image of a chessboard in `chessboard.png`
+## Features
 
-<img src="https://user-images.githubusercontent.com/208617/69907303-d526b400-13a0-11ea-982f-47dc7cacecdc.png" width=240 />
+- 🎯 Recognizes chess positions from photos
+- 📝 Provides FEN (Forsyth–Edwards Notation) for the position
+- 🔗 Generates Lichess analysis links
+- 📊 Shows prediction confidence levels
+- 🚦 Includes confidence indicators (High 🟢, Medium 🟡, Low 🔴)
+- ⚠️ Provides suggestions for better photo quality when needed
 
-Run the program like this
+## Prerequisites
 
-`./recognize.py chessboard.png`
+- Python 3.9+
+- TensorFlow 2.15.0
+- python-telegram-bot 20.7
+- Other dependencies listed in `requirements.txt`
 
-To get the chessboard position in [FEN](https://en.wikipedia.org/wiki/Forsyth%E2%80%93Edwards_Notation) notation
+## Deployment on Render
 
-`3rkb1r/1pp2ppp/2n1q1n1/p3Pb2/2Pp4/PN3NB1/1P1QPPPP/3RKB1R`
+### 1. Fork/Clone the Repository
 
-## Sample results
+First, fork this repository to your GitHub account or clone it and push to your own repository.
 
-Chess puzzle from a book:
+### 2. Prepare the Model Files
 
-<img src="https://user-images.githubusercontent.com/208617/69923373-5437ed00-1472-11ea-9877-89503cc532ea.png" width=240 />
+The neural network model files should be placed in the `nn` directory:
+- `saved_model.pb`
+- `variables/variables.data-00000-of-00001`
+- `variables/variables.index`
 
-Predicted: [2r2k1r/6bp/p3q3/4pp1Q/1p1n2P1/N7/PPP3BP/2KR1R2](https://lichess.org/analysis/standard/2r2k1r/6bp/p3q3/4pp1Q/1p1n2P1/N7/PPP3BP/2KR1R2) (99.633% confidence)
+### 3. Set Up Render
 
-Lichess analysis board diagram with arrows:
+1. Create a new account on [Render](https://render.com) if you don't have one
+2. Go to the Dashboard and click "New +"
+3. Select "Web Service"
+4. Connect your GitHub repository
+5. Configure the service:
 
-<img src="https://user-images.githubusercontent.com/208617/69923935-4ab08400-1476-11ea-8a65-5e11f0145b28.png" width=240 />
+   - **Name**: Choose a name for your service (e.g., `chess-recognition-bot`)
+   - **Environment**: `Python 3`
+   - **Region**: Choose the closest to your users
+   - **Branch**: `main` or `master`
+   - **Build Command**: `pip install -r requirements.txt`
+   - **Start Command**: `python telegram_bot.py`
+   - **Instance Type**: Free (for testing) or Basic (for production)
 
+### 4. Environment Variables
 
-Predicted: [5r1k/2q1r1pp/2p4n/2P2B2/pPQ1pR2/P5P1/4R2P/7K](https://lichess.org/analysis/standard/5r1k/2q1r1pp/2p4n/2P2B2/pPQ1pR2/P5P1/4R2P/7K) (99.997% confidence)
+No environment variables are required as the bot token is hardcoded in the script. However, for better security, you can move it to environment variables:
 
-## Getting started
+- `TELEGRAM_BOT_TOKEN`: Your Telegram bot token from BotFather
 
-You'll need python 3 and [Tensorflow 2](https://www.tensorflow.org/)
+### 5. Important Notes
 
-Set up your virtualenv and install python dependencies
-```
-virtualenv venv
-source venv/bin/activate
-pip3 install -r requirements.txt
-```
+1. The free tier of Render has some limitations:
+   - Services sleep after 15 minutes of inactivity
+   - Limited compute resources
+   - May have slower cold starts
 
-You'll need a neural network model to use `./recognize.py`
+2. For production use:
+   - Use at least the Basic plan ($7/month)
+   - This ensures your bot stays active 24/7
+   - Provides better performance and reliability
 
-To use a pre-trained model, download [nn.zip](https://github.com/linrock/chessboard-recognizer/releases/download/v0.5/nn.zip) and unzip in the project root folder.
+3. The web server runs on port 10000 by default
+   - Render will automatically assign a port via the `PORT` environment variable
+   - The bot handles this automatically
 
-To train your own model, you'll first need lots of images of chessboards
+### 6. Monitoring
 
-* For the images used in the pre-trained model, download [training-images.zip](https://github.com/linrock/chessboard-recognizer/releases/download/v0.4/training-images.zip) and unzip in the project root directory
-* Or generate your own training images with this script:
-  * `./generate_chessboards.py` downloads a bunch of chessboard images with randomly-placed pieces
-  
-Then run this script to convert the chessboard images into 32x32 PNGs of each square of the board
-  * `./generate_tiles.py` converts these downloaded chessboard images into 32x32 PNGs used for training
+1. Check the deployment status in Render dashboard
+2. Visit your service URL to see if the bot is running
+3. The web interface will show:
+   - Bot status
+   - Last check time
+   - Instructions to contact the bot
 
-Once you have tiles images ready for the training inputs, run this:
-  * `./train.py` creates a new neural network model
+### 7. Testing
 
-Once you have a neural network model ready, run `./recognize.py` with a path to a chessboard image:
+1. Find your bot on Telegram: @ChessRecognitionBot
+2. Start a conversation with `/start`
+3. Send a chess board photo
+4. You should receive:
+   - FEN notation
+   - Confidence level
+   - Lichess analysis link
 
-`./recognize.py ~/Desktop/chessboard.png`
+## Troubleshooting
 
+1. If the bot doesn't respond:
+   - Check Render logs for errors
+   - Ensure the model files are properly placed in the `nn` directory
+   - Verify the bot token is correct
 
-## Debugging
+2. If you get low confidence predictions:
+   - Ensure the chess board is clearly visible
+   - The entire board should be in the frame
+   - Good lighting conditions are important
+   - Pieces should be clearly distinguishable
 
-To verify that the generated 32x32 PNG tile images match the source chessboard image, use this script:
-  * `./view_images.py` for a convenient way to manually verify the generated images
+3. If the service keeps restarting:
+   - Check the logs for any errors
+   - Ensure you're on an appropriate plan for your usage
+   - Monitor memory usage in Render dashboard
 
-Then open `images.html` to view the chessboard and tile images with their corresponding pieces.
+## Support
 
-To debug the predicted outputs, open `debug.html` after running `./recognize.py` to view the actual/predicted boards
+If you encounter any issues or need help, please:
+1. Check the existing issues in the repository
+2. Create a new issue with detailed information about your problem
+3. Include relevant logs and screenshots
 
-![image](https://user-images.githubusercontent.com/208617/70389743-54c50c00-19bb-11ea-8734-a663dee66392.png)
+## License
 
-Each prediction shows the actual board, the predicted board, the prediction confidence for each square, and a link to a board editor so you can edit the actual FEN in case the predicted FEN is wrong.
-
-Incorrect or low-confidence predictions are a great source of training chessboard images.
-
-For a convenient way to add a training image, use this script:
-  * `./save_chessboard.py chessboard.png <subdirectory> <actual fen>`
-
-Then you can generate more tiles and re-train the model for more-accurate future predictions.
-
-
-## Acknowledgements
-
-* Original inspiration from [tensorflow_chessbot](https://github.com/Elucidation/tensorflow_chessbot) by [Elucidation](https://github.com/Elucidation)
-* Neural network architecture from https://www.tensorflow.org/tutorials/images/cnn
+This project is licensed under the MIT License - see the LICENSE file for details.
