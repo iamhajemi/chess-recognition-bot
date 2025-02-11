@@ -29,17 +29,23 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
         self.send_response(200)
         self.send_header('Content-type', 'text/html; charset=utf-8')
         self.end_headers()
-        response = """
+        current_time = time.strftime("%Y-%m-%d %H:%M:%S")
+        response = f"""
         <html>
             <head><title>Satranç Tahtası Tanıma Botu</title></head>
             <body>
                 <h1>Satranç Tahtası Tanıma Botu Aktif</h1>
                 <p>Bot başarıyla çalışıyor. Telegram'dan @ChessRecognitionBot ile iletişime geçebilirsiniz.</p>
-                <p>Son kontrol zamanı: {}}</p>
+                <p>Son kontrol zamanı: {current_time}</p>
             </body>
         </html>
-        """.format(time.strftime("%Y-%m-%d %H:%M:%S"))
+        """
         self.wfile.write(response.encode('utf-8'))
+
+    def do_HEAD(self):
+        self.send_response(200)
+        self.send_header('Content-type', 'text/html; charset=utf-8')
+        self.end_headers()
 
 def start_web_server():
     """Web sunucusunu başlat"""
@@ -169,8 +175,13 @@ def run_bot():
 
         print("Bot ve web sunucusu başlatılıyor...")
         
-        # Bot'u başlat
-        application.run_polling(allowed_updates=Update.ALL_TYPES, drop_pending_updates=True)
+        # Bot'u başlat (önceki instance'ları temizle)
+        application.run_polling(
+            allowed_updates=Update.ALL_TYPES,
+            drop_pending_updates=True,
+            close_loop=False,  # Event loop'u kapatma
+            stop_signals=None  # Sinyal yakalama devre dışı
+        )
         
     except Exception as e:
         print(f"Bir hata oluştu: {str(e)}")
