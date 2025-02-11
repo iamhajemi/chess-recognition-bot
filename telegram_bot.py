@@ -27,13 +27,26 @@ TOKEN = "7563812107:AAHX2ADgHEkHLjnBFpCXoqvq2LcqO7TB_YQ"
 class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
     def do_GET(self):
         self.send_response(200)
+        self.send_header('Content-type', 'text/html; charset=utf-8')
         self.end_headers()
-        self.wfile.write(b'Bot calisiyor!')
+        response = """
+        <html>
+            <head><title>Satranç Tahtası Tanıma Botu</title></head>
+            <body>
+                <h1>Satranç Tahtası Tanıma Botu Aktif</h1>
+                <p>Bot başarıyla çalışıyor. Telegram'dan @ChessRecognitionBot ile iletişime geçebilirsiniz.</p>
+                <p>Son kontrol zamanı: {}}</p>
+            </body>
+        </html>
+        """.format(time.strftime("%Y-%m-%d %H:%M:%S"))
+        self.wfile.write(response.encode('utf-8'))
 
 def start_web_server():
     """Web sunucusunu başlat"""
     port = int(os.environ.get("PORT", 10000))
+    print(f"Web sunucusu {port} portunda başlatılıyor...")
     server = HTTPServer(('0.0.0.0', port), SimpleHTTPRequestHandler)
+    print(f"Web sunucusu başlatıldı ve {port} portunu dinliyor")
     server.serve_forever()
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -42,7 +55,10 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     load_model_if_needed()
     await update.message.reply_text(
         'Merhaba! Ben bir satranç tahtası tanıma botuyum. '
-        'Bana bir satranç tahtası fotoğrafı gönder, ben sana FEN notasyonunu ve en iyi hamleyi söyleyeyim.'
+        'Bana bir satranç tahtası fotoğrafı gönder, ben sana:\n\n'
+        '1. FEN notasyonunu\n'
+        '2. Lichess analiz linkini göndereceğim.\n\n'
+        'İyi oyunlar! 🎮'
     )
 
 async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
