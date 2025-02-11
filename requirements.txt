@@ -5,3 +5,4 @@ numpy
 chess
 aiohttp==3.9.3
 nest-asyncio==1.6.0
+requests==2.31.0

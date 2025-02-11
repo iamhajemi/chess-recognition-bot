@@ -10,6 +10,8 @@ import time
 import threading
 from http.server import HTTPServer, BaseHTTPRequestHandler
 import nest_asyncio
+import requests
+import asyncio
 
 # Event loop düzeltmesi
 nest_asyncio.apply()
@@ -24,6 +26,9 @@ logging.basicConfig(
 TOKEN = os.environ.get("TELEGRAM_BOT_TOKEN")
 if not TOKEN:
     raise ValueError("TELEGRAM_BOT_TOKEN environment variable is not set!")
+
+# Service URL'ini environment variable'dan al veya default değer kullan
+SERVICE_URL = os.environ.get("RENDER_EXTERNAL_URL")
 
 # Web sunucusu için basit handler
 class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
@@ -156,6 +161,18 @@ async def handle_photo(update: Update, context: ContextTypes.DEFAULT_TYPE):
             except:
                 pass
 
+def keep_alive():
+    """Servisi canlı tutmak için periyodik olarak ping at"""
+    while True:
+        try:
+            if SERVICE_URL:
+                response = requests.get(SERVICE_URL)
+                print(f"Self-ping status: {response.status_code}")
+            time.sleep(840)  # 14 dakika (Render'ın 15 dakika sleep limitinden önce)
+        except Exception as e:
+            print(f"Self-ping error: {str(e)}")
+            time.sleep(60)  # Hata durumunda 1 dakika bekle
+
 def run_bot():
     """Bot'u başlat"""
     try:
@@ -172,22 +189,27 @@ def run_bot():
 
         # Web sunucusunu ayrı bir thread'de başlat
         web_thread = threading.Thread(target=start_web_server)
-        web_thread.daemon = False  # Ana uygulama dursa bile web sunucusu çalışmaya devam etsin
+        web_thread.daemon = False
         web_thread.start()
+
+        # Keep-alive thread'ini başlat
+        if SERVICE_URL:
+            keep_alive_thread = threading.Thread(target=keep_alive)
+            keep_alive_thread.daemon = True
+            keep_alive_thread.start()
 
         print("Bot ve web sunucusu başlatılıyor...")
         
-        # Bot'u başlat (önceki instance'ları temizle)
+        # Bot'u başlat
         application.run_polling(
             allowed_updates=Update.ALL_TYPES,
             drop_pending_updates=True,
-            close_loop=False,  # Event loop'u kapatma
-            stop_signals=None  # Sinyal yakalama devre dışı
+            close_loop=False,
+            stop_signals=None
         )
         
     except Exception as e:
         print(f"Bir hata oluştu: {str(e)}")
-        # Hata durumunda 30 saniye bekle ve yeniden başlat
         time.sleep(30)
         print("Bot yeniden başlatılıyor...")
         run_bot()
