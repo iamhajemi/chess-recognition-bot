@@ -20,8 +20,10 @@ logging.basicConfig(
     level=logging.INFO
 )
 
-# Bot token'ınızı buraya girin
-TOKEN = "7563812107:AAHX2ADgHEkHLjnBFpCXoqvq2LcqO7TB_YQ"
+# Bot token'ı environment variable'dan al
+TOKEN = os.environ.get("TELEGRAM_BOT_TOKEN")
+if not TOKEN:
+    raise ValueError("TELEGRAM_BOT_TOKEN environment variable is not set!")
 
 # Web sunucusu için basit handler
 class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):

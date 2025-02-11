@@ -49,9 +49,16 @@ The neural network model files should be placed in the `nn` directory:
 
 ### 4. Environment Variables
 
-No environment variables are required as the bot token is hardcoded in the script. However, for better security, you can move it to environment variables:
+The following environment variable must be set in your Render dashboard:
 
-- `TELEGRAM_BOT_TOKEN`: Your Telegram bot token from BotFather
+- `TELEGRAM_BOT_TOKEN`: Your Telegram bot token from BotFather (Required)
+- `PORT`: Automatically set by Render, no need to configure
+
+To set environment variables in Render:
+1. Go to your service dashboard
+2. Click on "Environment"
+3. Add the variable `TELEGRAM_BOT_TOKEN` with your bot token
+4. Click "Save Changes"
 
 ### 5. Important Notes
 
