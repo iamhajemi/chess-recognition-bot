@@ -45,7 +45,7 @@ The neural network model files should be placed in the `nn` directory:
    - **Branch**: `main` or `master`
    - **Build Command**: `pip install -r requirements.txt`
    - **Start Command**: `python telegram_bot.py`
-   - **Instance Type**: Free (for testing) or Basic (for production)
+   - **Instance Type**: Basic (required for 24/7 operation)
 
 ### 4. Environment Variables
 
@@ -60,21 +60,41 @@ To set environment variables in Render:
 3. Add the variable `TELEGRAM_BOT_TOKEN` with your bot token
 4. Click "Save Changes"
 
-### 5. Important Notes
+### 5. Keeping the Bot Running 24/7
 
-1. The free tier of Render has some limitations:
-   - Services sleep after 15 minutes of inactivity
-   - Limited compute resources
-   - May have slower cold starts
+To ensure your bot runs continuously without sleeping:
 
-2. For production use:
-   - Use at least the Basic plan ($7/month)
-   - This ensures your bot stays active 24/7
-   - Provides better performance and reliability
+1. **Upgrade to Basic Plan**:
+   - Go to your service dashboard
+   - Click on "Change Plan"
+   - Select "Basic" ($7/month)
+   - Confirm the upgrade
 
-3. The web server runs on port 10000 by default
-   - Render will automatically assign a port via the `PORT` environment variable
-   - The bot handles this automatically
+2. **Configure Auto-Restart**:
+   - In your service settings
+   - Enable "Auto-Deploy"
+   - Set "Health Check Path" to `/`
+   - Set "Health Check Period" to 1 minute
+
+3. **Set Resource Limits**:
+   - Memory: 512 MB minimum
+   - CPU: 0.1 CPU minimum
+   - These settings are available in the Basic plan
+
+4. **Monitor Health**:
+   - Set up Render monitoring alerts
+   - Enable email notifications for service status
+   - Check service logs regularly
+
+5. **Prevent Inactivity**:
+   - The web server we implemented keeps the service active
+   - Render's health checks will ping the server
+   - This prevents the service from sleeping
+
+6. **Backup Plan**:
+   - Set up a monitoring service (like UptimeRobot)
+   - Configure it to ping your service URL every 5 minutes
+   - This provides additional uptime assurance
 
 ### 6. Monitoring
 
